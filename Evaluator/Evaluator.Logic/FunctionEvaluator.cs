@@ -5,13 +5,39 @@ public class FunctionEvaluator
     public static double Evalute(string infix)
     {
         var postfix = ToPostfix(infix);
-        Console.WriteLine(postfix);
         return Calculate(postfix);
     }
 
     private static double Calculate(string postfix)
     {
-        return 0;
+        var stack = new Stack<double>();
+        foreach (var item in postfix)
+        {
+            if (IsOperator(item))
+            {
+                var operator2 = stack.Pop();
+                var operator1 = stack.Pop();
+                stack.Push(Result(operator1, item, operator2));
+            }
+            else
+            {
+                stack.Push(char.GetNumericValue(item));
+            }
+        }
+        return stack.Pop();
+    }
+
+    private static double Result(double operator1, char item, double operator2)
+    {
+        return item switch
+        {
+            '+' => operator1 + operator2,
+            '-' => operator1 - operator2,
+            '*' => operator1 * operator2,
+            '/' => operator1 / operator2,
+            '^' => Math.Pow(operator1, operator2),
+            _ => throw new Exception("Invalid expresion"),
+        };
     }
 
     private static string ToPostfix(string infix)
