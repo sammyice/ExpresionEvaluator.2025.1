@@ -1,4 +1,6 @@
-﻿namespace Evaluator.Logic;
+﻿using System.Globalization;
+
+namespace Evaluator.Logic;
 
 public class FunctionEvaluator
 {
@@ -11,17 +13,18 @@ public class FunctionEvaluator
     private static double Calculate(string postfix)
     {
         var stack = new Stack<double>();
-        foreach (var item in postfix)
+        foreach (var item in postfix.Split(' ', StringSplitOptions.RemoveEmptyEntries))
         {
-            if (IsOperator(item))
+            if (item.Length == 1 && IsOperator(item[0]))
             {
                 var operator2 = stack.Pop();
                 var operator1 = stack.Pop();
-                stack.Push(Result(operator1, item, operator2));
+                stack.Push(Result(operator1, item[0], operator2));
             }
             else
             {
-                stack.Push(char.GetNumericValue(item));
+                double value = double.Parse(item, CultureInfo.InvariantCulture);
+                stack.Push(value);
             }
         }
         return stack.Pop();
@@ -44,8 +47,9 @@ public class FunctionEvaluator
     {
         var stack = new Stack<char>();
         var postfix = string.Empty;
-        foreach (var item in infix)
+        for (int i = 0; i < infix.Length; i++)
         {
+            char item = infix[i];
             if (IsOperator(item))
             {
                 if (stack.Count == 0)
@@ -58,7 +62,7 @@ public class FunctionEvaluator
                     {
                         do
                         {
-                            postfix += stack.Pop();
+                            postfix +=  stack.Pop() + " ";
                         } while (stack.Peek() != '(');
                         stack.Pop();
                     }
@@ -70,7 +74,7 @@ public class FunctionEvaluator
                         }
                         else
                         {
-                            postfix += stack.Pop();
+                            postfix +=  stack.Pop() + " ";
                             stack.Push(item);
                         }
                     }
@@ -78,7 +82,13 @@ public class FunctionEvaluator
             }
             else
             {
-                postfix += item;
+                string number = item.ToString();
+                while (i + 1 < infix.Length && (char.IsDigit(infix[i + 1]) || infix[i + 1] == '.'))
+                {
+                    i++;
+                    number += infix[i];
+                }
+                postfix += number + " ";
             }
         }
         do
